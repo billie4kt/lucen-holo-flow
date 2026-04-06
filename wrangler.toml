@@ -1,0 +1,23 @@
+name = "lucen-holo-flow"
+compatibility_date = "2024-01-01"
+
+[build]
+command = "npm run build"
+cwd = "."
+
+[build.upload]
+format = "service-worker"
+
+# Environment variables for build
+[vars]
+NODE_VERSION = "18"
+
+# Pages configuration
+[[pages_build_config]]
+# Build command and output directory
+build_command = "npm run build"
+destination_dir = "dist"
+root_dir = "."
+
+# Install command
+install_command = "npm ci"
