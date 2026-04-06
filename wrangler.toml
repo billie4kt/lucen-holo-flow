@@ -18,6 +18,7 @@ NODE_VERSION = "18"
 build_command = "npm run build"
 destination_dir = "dist"
 root_dir = "."
-
-# Install command
 install_command = "npm ci"
+
+# Disable auto-detection since we're using Vite 8
+pages_build_output_dir = "dist"
