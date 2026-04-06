@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { OptimizedImage, OptimizedVideo } from './OptimizedMedia';
 
@@ -9,10 +9,10 @@ interface MediaGalleryProps {
 }
 
 export default function MediaGallery({ images, videos, title }: MediaGalleryProps) {
-  const allMedia = [
+  const allMedia = useMemo(() => [
     ...videos.map((src) => ({ type: 'video' as const, src })),
     ...images.map((src) => ({ type: 'image' as const, src })),
-  ];
+  ], [videos, images]);
   const [current, setCurrent] = useState(0);
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
