@@ -6,9 +6,10 @@ interface OptimizedImageProps {
   className?: string;
   style?: React.CSSProperties;
   priority?: boolean;
+  sizes?: string;
 }
 
-export function OptimizedImage({ src, alt, className = '', style, priority = false }: OptimizedImageProps) {
+export function OptimizedImage({ src, alt, className = '', style, priority = false, sizes }: OptimizedImageProps) {
   const [loaded, setLoaded] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
 
@@ -23,8 +24,11 @@ export function OptimizedImage({ src, alt, className = '', style, priority = fal
       alt={alt}
       loading={priority ? 'eager' : 'lazy'}
       decoding="async"
+      sizes={sizes}
       onLoad={() => setLoaded(true)}
-      className={`transition-opacity duration-500 ${loaded ? 'opacity-100' : 'opacity-0'} ${className}`}
+      className={`transition-all duration-700 ${
+        loaded ? 'opacity-100 blur-0' : 'opacity-0 blur-md'
+      } ${className}`}
       style={style}
     />
   );
@@ -37,10 +41,20 @@ interface OptimizedVideoProps {
   style?: React.CSSProperties;
   priority?: boolean;
   loop?: boolean;
+  poster?: string;
   onEnded?: () => void;
 }
 
-export function OptimizedVideo({ src, sources, className = '', style, priority = false, loop = true, onEnded }: OptimizedVideoProps) {
+export function OptimizedVideo({
+  src,
+  sources,
+  className = '',
+  style,
+  priority = false,
+  loop = true,
+  poster,
+  onEnded
+}: OptimizedVideoProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [loaded, setLoaded] = useState(false);
 
@@ -84,6 +98,7 @@ export function OptimizedVideo({ src, sources, className = '', style, priority =
       onEnded={onEnded}
       className={`transition-opacity duration-500 ${loaded ? 'opacity-100' : 'opacity-0'} ${className}`}
       style={style}
+      poster={poster}
     >
       {sources?.length
         ? sources.map((source) => (

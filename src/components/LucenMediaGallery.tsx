@@ -2,12 +2,23 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { OptimizedImage, OptimizedVideo } from './OptimizedMedia';
 
-const galleryItems = [
+interface GalleryItem {
+  title: string;
+  subtitle: string;
+  type: 'video' | 'image';
+  src: string;
+  poster?: string;
+  href: string;
+  span: string;
+}
+
+const galleryItems: GalleryItem[] = [
   {
     title: 'Retail Activation',
     subtitle: 'Immersive product launches',
     type: 'video' as const,
     src: '/media/Comp-1_10-2.mp4',
+    poster: '/media/Starbucks.jpg',
     href: '/use-cases/retail-product-launch',
     span: 'md:col-span-7 md:row-span-2',
   },
@@ -16,6 +27,7 @@ const galleryItems = [
     subtitle: 'Brand storytelling in motion',
     type: 'video' as const,
     src: '/media/corporate_lobby.mp4',
+    poster: '/media/corporate_lobby.jpg',
     href: '/use-cases/corporate-lobby',
     span: 'md:col-span-5',
   },
@@ -32,6 +44,7 @@ const galleryItems = [
     subtitle: 'High-impact product discovery',
     type: 'video' as const,
     src: '/media/autoshowroom_vid-2.mp4',
+    poster: '/media/auto-showroom-2.jpg',
     href: '/use-cases/automotive-showroom',
     span: 'md:col-span-4',
   },
@@ -88,6 +101,7 @@ export default function LucenMediaGallery() {
                   {item.type === 'video' ? (
                     <OptimizedVideo
                       src={item.src}
+                      poster={item.poster}
                       className="w-full h-full object-cover opacity-70 group-hover:opacity-95 group-hover:scale-[1.03] transition-all duration-700"
                     />
                   ) : (

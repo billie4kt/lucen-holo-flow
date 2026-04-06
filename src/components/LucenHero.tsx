@@ -11,6 +11,7 @@ export default function LucenHero() {
             { src: '/media/tablet091224.mp4', media: '(min-width: 768px) and (max-width: 1023px)' },
             { src: '/media/desktop091224.mp4', media: '(min-width: 1024px)' },
           ]}
+          poster="/media/corporate_lobby.jpg"
           className="w-full h-full object-cover"
           style={{ filter: 'brightness(0.7) saturate(1.2)' }}
           priority
