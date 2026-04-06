@@ -9,7 +9,7 @@ interface OptimizedImageProps {
   sizes?: string;
 }
 
-export function OptimizedImage({ src, alt, className = '', style, priority = false, sizes }: OptimizedImageProps) {
+export function OptimizedImage({ src, alt, className = '', style, priority = false }: OptimizedImageProps) {
   const [loaded, setLoaded] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
 
@@ -24,7 +24,6 @@ export function OptimizedImage({ src, alt, className = '', style, priority = fal
       alt={alt}
       loading={priority ? 'eager' : 'lazy'}
       decoding="async"
-      sizes={sizes}
       onLoad={() => setLoaded(true)}
       className={`transition-all duration-700 ${
         loaded ? 'opacity-100 blur-0' : 'opacity-0 blur-md'
