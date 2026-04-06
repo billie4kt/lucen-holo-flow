@@ -16,17 +16,23 @@ export function OptimizedImage({ src, alt, className = '', style, priority = fal
     if (imgRef.current?.complete) setLoaded(true);
   }, []);
 
+  // Generate WEBP source from JPG/PNG
+  const webpSrc = src.replace(/\.(jpg|jpeg|png)$/i, '.webp');
+
   return (
-    <img
-      ref={imgRef}
-      src={src}
-      alt={alt}
-      loading={priority ? 'eager' : 'lazy'}
-      decoding="async"
-      onLoad={() => setLoaded(true)}
-      className={`transition-opacity duration-500 ${loaded ? 'opacity-100' : 'opacity-0'} ${className}`}
-      style={style}
-    />
+    <picture>
+      <source srcSet={webpSrc} type="image/webp" />
+      <img
+        ref={imgRef}
+        src={src}
+        alt={alt}
+        loading={priority ? 'eager' : 'lazy'}
+        decoding="async"
+        onLoad={() => setLoaded(true)}
+        className={`transition-opacity duration-500 ${loaded ? 'opacity-100' : 'opacity-0'} ${className}`}
+        style={style}
+      />
+    </picture>
   );
 }
 
@@ -48,16 +54,22 @@ export function OptimizedVideo({ src, sources, className = '', style, priority =
     const video = videoRef.current;
     if (!video) return;
 
-    const primeVideo = () => {
-      video.preload = 'auto';
-      video.load();
-      video.play().catch(() => {});
+    const primeVideo = async () => {
+      try {
+        video.preload = 'metadata';
+        // Don't auto-play, just preload
+        if (priority) {
+          video.load();
+        }
+      } catch (e) {
+        console.warn('Video preload failed:', e);
+      }
     };
 
     if (priority) {
       primeVideo();
     } else {
-      video.preload = 'none';
+      // Use IntersectionObserver to load video only when visible
       const observer = new IntersectionObserver(
         ([entry]) => {
           if (entry.isIntersecting) {
@@ -65,7 +77,7 @@ export function OptimizedVideo({ src, sources, className = '', style, priority =
             observer.disconnect();
           }
         },
-        { rootMargin: '300px' }
+        { rootMargin: '500px' }
       );
       observer.observe(video);
       return () => observer.disconnect();
@@ -79,7 +91,7 @@ export function OptimizedVideo({ src, sources, className = '', style, priority =
       muted
       loop={loop}
       playsInline
-      preload={priority ? 'auto' : 'none'}
+      preload={priority ? 'metadata' : 'none'}
       onLoadedData={() => setLoaded(true)}
       onEnded={onEnded}
       className={`transition-opacity duration-500 ${loaded ? 'opacity-100' : 'opacity-0'} ${className}`}
