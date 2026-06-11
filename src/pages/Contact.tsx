@@ -10,7 +10,7 @@ import Seo from '@/components/Seo';
 import WhatsAppButton from '@/components/WhatsAppButton';
 import { OptimizedImage } from '@/components/OptimizedMedia';
 import StickyScrollytell, { ScrollPanel } from '@/components/StickyScrollytell';
-import ImmersiveHero from '@/components/ImmersiveHero';
+// ImmersiveHero replaced with a custom glassmorphic landscape hero below
 import { Phone, MessageCircle, PhoneCall, Mail, Loader2, CheckCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
