@@ -5,7 +5,27 @@ import HolographicCanvas from './HolographicCanvas';
 interface Metric { value: string; label: string }
 interface Props {
   industryName: string;
+  industrySlug?: string;
   metrics: Metric[];
+}
+
+/** Deterministic hash → 0..1 for per-industry seeding */
+function hash01(s: string): number {
+  let h = 2166136261 >>> 0;
+  for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619);
+  return ((h >>> 0) % 1000) / 1000;
+}
+
+/** Find a metric whose label matches any keyword; return parsed number */
+function pickMetric(metrics: Metric[], keywords: string[]): number | null {
+  for (const m of metrics) {
+    const l = m.label.toLowerCase();
+    if (keywords.some((k) => l.includes(k))) {
+      const n = parseFloat(m.value.replace(/[^\d.\-]/g, ''));
+      if (!Number.isNaN(n)) return n;
+    }
+  }
+  return null;
 }
 
 function parseNumber(v: string): { num: number; prefix: string; suffix: string } | null {
@@ -42,20 +62,38 @@ function Counter({ target, prefix, suffix }: { target: number; prefix: string; s
  * Live, animated infographic for an industry. Pairs a holographic canvas
  * backdrop with counting metrics + animated bars driven by Lucen Engine telemetry.
  */
-export default function IndustryInfographic({ industryName, metrics }: Props) {
-  // Simulated live telemetry stream — replace with real subscriptions later.
-  const [live, setLive] = useState({ attention: 62, dwell: 14.2, conversion: 4.1, sessions: 1284 });
+export default function IndustryInfographic({ industryName, industrySlug, metrics }: Props) {
+  // Seed live telemetry from this industry's own metrics so each page is unique.
+  const seedKey = industrySlug ?? industryName;
+  const jitter = hash01(seedKey); // 0..1
+  const attentionSeed = pickMetric(metrics, ['attention', 'engagement', 'recall', 'dwell']) ?? (55 + jitter * 35);
+  const dwellSeed = pickMetric(metrics, ['dwell', 'time', 'duration']) ?? (8 + jitter * 22);
+  const conversionSeed = pickMetric(metrics, ['conversion', 'uplift', 'lift', 'sales', 'deposit']) ?? (2 + jitter * 6);
+  const sessionsSeed = 600 + Math.floor(jitter * 3200);
+
+  // Clamp seeds into realistic ranges for the bar maxes
+  const initial = {
+    attention: Math.max(20, Math.min(98, Math.abs(attentionSeed) > 100 ? 70 : Math.abs(attentionSeed))),
+    dwell: Math.max(3, Math.min(45, Math.abs(dwellSeed) > 45 ? 18 : Math.abs(dwellSeed))),
+    conversion: Math.max(0.5, Math.min(12, Math.abs(conversionSeed) > 12 ? 5 : Math.abs(conversionSeed))),
+    sessions: sessionsSeed,
+  };
+
+  const [live, setLive] = useState(initial);
+  // Re-seed when industry changes (client-side route changes)
+  useEffect(() => { setLive(initial); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [seedKey]);
   useEffect(() => {
     const id = setInterval(() => {
       setLive((p) => ({
-        attention: Math.max(35, Math.min(98, p.attention + (Math.random() - 0.5) * 6)),
-        dwell: Math.max(4, Math.min(45, p.dwell + (Math.random() - 0.5) * 1.2)),
-        conversion: Math.max(0.5, Math.min(12, p.conversion + (Math.random() - 0.5) * 0.5)),
+        attention: Math.max(20, Math.min(98, p.attention + (Math.random() - 0.5) * 5)),
+        dwell: Math.max(3, Math.min(45, p.dwell + (Math.random() - 0.5) * 1.1)),
+        conversion: Math.max(0.5, Math.min(12, p.conversion + (Math.random() - 0.5) * 0.4)),
         sessions: p.sessions + Math.floor(Math.random() * 7),
       }));
     }, 1800);
     return () => clearInterval(id);
   }, []);
+
 
   return (
     <section className="relative w-full overflow-hidden">
