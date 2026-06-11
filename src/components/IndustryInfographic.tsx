@@ -28,6 +28,88 @@ function pickMetric(metrics: Metric[], keywords: string[]): number | null {
   return null;
 }
 
+/** Industry-tailored visual + telemetry profile */
+interface IndustryStream { label: string; suffix: string; max: number; seed: number; volatility: number }
+interface IndustryProfile {
+  hue: number; density: number; intensity: number;
+  streams: IndustryStream[];
+  unit?: string; // label for sessions counter
+}
+const DEFAULT_PROFILE: IndustryProfile = {
+  hue: 195, density: 160, intensity: 0.85,
+  streams: [
+    { label: 'Footfall index', suffix: '', max: 200, seed: 120, volatility: 6 },
+    { label: 'Brand lift', suffix: '%', max: 60, seed: 28, volatility: 2 },
+    { label: 'Share-of-attention', suffix: '%', max: 100, seed: 64, volatility: 4 },
+  ],
+};
+const INDUSTRY_PROFILES: Record<string, IndustryProfile> = {
+  'retail-luxury': { hue: 320, density: 200, intensity: 1, streams: [
+    { label: 'Window dwell', suffix: 's', max: 30, seed: 12, volatility: 1.2 },
+    { label: 'Basket lift', suffix: '%', max: 40, seed: 18, volatility: 1.5 },
+    { label: 'Try-on intent', suffix: '%', max: 100, seed: 54, volatility: 4 },
+  ]},
+  'real-estate': { hue: 28, density: 180, intensity: 0.95, streams: [
+    { label: 'Tour completion', suffix: '%', max: 100, seed: 72, volatility: 3 },
+    { label: 'Deposit intent', suffix: '%', max: 60, seed: 22, volatility: 2 },
+    { label: 'Unit recall', suffix: '%', max: 100, seed: 88, volatility: 2.5 },
+  ]},
+  telecom: { hue: 205, density: 240, intensity: 1, streams: [
+    { label: 'Subscriber lift', suffix: '%', max: 40, seed: 14, volatility: 1.4 },
+    { label: 'ARPU delta', suffix: '%', max: 25, seed: 8, volatility: 1 },
+    { label: 'Plan upgrade rate', suffix: '%', max: 30, seed: 11, volatility: 1.2 },
+  ]},
+  automotive: { hue: 14, density: 220, intensity: 1, streams: [
+    { label: 'Configurator opens', suffix: '/min', max: 50, seed: 22, volatility: 2.4 },
+    { label: 'Test-drive intent', suffix: '%', max: 60, seed: 27, volatility: 2 },
+    { label: 'Spec-up conversion', suffix: '%', max: 30, seed: 9, volatility: 1.2 },
+  ]},
+  banking: { hue: 165, density: 180, intensity: 0.9, streams: [
+    { label: 'Branch dwell', suffix: 's', max: 60, seed: 28, volatility: 2 },
+    { label: 'Product enquiries', suffix: '/h', max: 120, seed: 64, volatility: 4 },
+    { label: 'App install lift', suffix: '%', max: 40, seed: 16, volatility: 1.4 },
+  ]},
+  hospitality: { hue: 38, density: 180, intensity: 0.9, streams: [
+    { label: 'Concierge engages', suffix: '/h', max: 80, seed: 38, volatility: 3 },
+    { label: 'Upsell take-rate', suffix: '%', max: 35, seed: 14, volatility: 1.2 },
+    { label: 'Stay-extension intent', suffix: '%', max: 25, seed: 9, volatility: 0.9 },
+  ]},
+  entertainment: { hue: 280, density: 260, intensity: 1, streams: [
+    { label: 'Crowd capture', suffix: '%', max: 100, seed: 78, volatility: 3 },
+    { label: 'Social shares', suffix: '/min', max: 80, seed: 28, volatility: 3 },
+    { label: 'Encore intent', suffix: '%', max: 60, seed: 36, volatility: 2 },
+  ]},
+  healthcare: { hue: 175, density: 150, intensity: 0.8, streams: [
+    { label: 'Wayfinding success', suffix: '%', max: 100, seed: 86, volatility: 2 },
+    { label: 'Education recall', suffix: '%', max: 100, seed: 64, volatility: 2.5 },
+    { label: 'Anxiety drop', suffix: '%', max: 40, seed: 18, volatility: 1.4 },
+  ]},
+  education: { hue: 210, density: 180, intensity: 0.9, streams: [
+    { label: 'Lesson recall', suffix: '%', max: 100, seed: 78, volatility: 2 },
+    { label: 'Hands-on time', suffix: 'm', max: 30, seed: 14, volatility: 1 },
+    { label: 'Participation', suffix: '%', max: 100, seed: 72, volatility: 3 },
+  ]},
+  government: { hue: 220, density: 160, intensity: 0.85, streams: [
+    { label: 'Citizen engagement', suffix: '%', max: 100, seed: 58, volatility: 2 },
+    { label: 'Info recall', suffix: '%', max: 100, seed: 64, volatility: 2.5 },
+    { label: 'Service throughput', suffix: '/h', max: 200, seed: 96, volatility: 6 },
+  ]},
+  aviation: { hue: 200, density: 220, intensity: 1, streams: [
+    { label: 'Gate dwell', suffix: 's', max: 90, seed: 42, volatility: 3 },
+    { label: 'Duty-free uplift', suffix: '%', max: 35, seed: 14, volatility: 1.2 },
+    { label: 'Loyalty sign-ups', suffix: '/h', max: 60, seed: 22, volatility: 2 },
+  ]},
+  events: { hue: 295, density: 260, intensity: 1, streams: [
+    { label: 'Stage capture', suffix: '%', max: 100, seed: 84, volatility: 3 },
+    { label: 'Sponsor recall', suffix: '%', max: 100, seed: 62, volatility: 2.5 },
+    { label: 'Post-event reach', suffix: 'k', max: 500, seed: 180, volatility: 14 },
+  ]},
+};
+function getProfile(slug?: string): IndustryProfile {
+  if (!slug) return DEFAULT_PROFILE;
+  return INDUSTRY_PROFILES[slug] ?? DEFAULT_PROFILE;
+}
+
 function parseNumber(v: string): { num: number; prefix: string; suffix: string } | null {
   const m = v.match(/^([^\d-]*)(-?\d+(?:\.\d+)?)(.*)$/);
   if (!m) return null;
