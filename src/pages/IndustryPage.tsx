@@ -208,6 +208,8 @@ export default function IndustryPage() {
           </motion.div>
         </div>
       </div>
+      <LucenFooter />
     </div>
   );
 }
+
