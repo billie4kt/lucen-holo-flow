@@ -5,7 +5,27 @@ import HolographicCanvas from './HolographicCanvas';
 interface Metric { value: string; label: string }
 interface Props {
   industryName: string;
+  industrySlug?: string;
   metrics: Metric[];
+}
+
+/** Deterministic hash → 0..1 for per-industry seeding */
+function hash01(s: string): number {
+  let h = 2166136261 >>> 0;
+  for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619);
+  return ((h >>> 0) % 1000) / 1000;
+}
+
+/** Find a metric whose label matches any keyword; return parsed number */
+function pickMetric(metrics: Metric[], keywords: string[]): number | null {
+  for (const m of metrics) {
+    const l = m.label.toLowerCase();
+    if (keywords.some((k) => l.includes(k))) {
+      const n = parseFloat(m.value.replace(/[^\d.\-]/g, ''));
+      if (!Number.isNaN(n)) return n;
+    }
+  }
+  return null;
 }
 
 function parseNumber(v: string): { num: number; prefix: string; suffix: string } | null {
