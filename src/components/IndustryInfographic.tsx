@@ -148,12 +148,13 @@ export default function IndustryInfographic({ industryName, industrySlug, metric
   // Seed live telemetry from this industry's own metrics so each page is unique.
   const seedKey = industrySlug ?? industryName;
   const jitter = hash01(seedKey); // 0..1
+  const profile = getProfile(industrySlug);
+
   const attentionSeed = pickMetric(metrics, ['attention', 'engagement', 'recall', 'dwell']) ?? (55 + jitter * 35);
   const dwellSeed = pickMetric(metrics, ['dwell', 'time', 'duration']) ?? (8 + jitter * 22);
   const conversionSeed = pickMetric(metrics, ['conversion', 'uplift', 'lift', 'sales', 'deposit']) ?? (2 + jitter * 6);
   const sessionsSeed = 600 + Math.floor(jitter * 3200);
 
-  // Clamp seeds into realistic ranges for the bar maxes
   const initial = {
     attention: Math.max(20, Math.min(98, Math.abs(attentionSeed) > 100 ? 70 : Math.abs(attentionSeed))),
     dwell: Math.max(3, Math.min(45, Math.abs(dwellSeed) > 45 ? 18 : Math.abs(dwellSeed))),
@@ -162,8 +163,32 @@ export default function IndustryInfographic({ industryName, industrySlug, metric
   };
 
   const [live, setLive] = useState(initial);
-  // Re-seed when industry changes (client-side route changes)
-  useEffect(() => { setLive(initial); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [seedKey]);
+  // Per-industry bespoke streams (sparkline history)
+  const HISTORY = 28;
+  const [streams, setStreams] = useState(() =>
+    profile.streams.map((s) => ({
+      ...s,
+      val: s.seed,
+      history: Array.from({ length: HISTORY }, () =>
+        Math.max(0, Math.min(s.max, s.seed + (Math.random() - 0.5) * s.volatility * 2))
+      ),
+    }))
+  );
+
+  useEffect(() => {
+    setLive(initial);
+    setStreams(
+      profile.streams.map((s) => ({
+        ...s,
+        val: s.seed,
+        history: Array.from({ length: HISTORY }, () =>
+          Math.max(0, Math.min(s.max, s.seed + (Math.random() - 0.5) * s.volatility * 2))
+        ),
+      }))
+    );
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
+  }, [seedKey]);
+
   useEffect(() => {
     const id = setInterval(() => {
       setLive((p) => ({
@@ -172,20 +197,25 @@ export default function IndustryInfographic({ industryName, industrySlug, metric
         conversion: Math.max(0.5, Math.min(12, p.conversion + (Math.random() - 0.5) * 0.4)),
         sessions: p.sessions + Math.floor(Math.random() * 7),
       }));
-    }, 1800);
+      setStreams((prev) =>
+        prev.map((s) => {
+          const next = Math.max(0, Math.min(s.max, s.val + (Math.random() - 0.5) * s.volatility * 2));
+          return { ...s, val: next, history: [...s.history.slice(1), next] };
+        })
+      );
+    }, 1500);
     return () => clearInterval(id);
   }, []);
-
 
   return (
     <section className="relative w-full overflow-hidden">
       <div className="absolute inset-0 opacity-70 pointer-events-none">
-        <HolographicCanvas density={160} hue={195} intensity={0.85} />
+        <HolographicCanvas density={profile.density} hue={profile.hue} intensity={profile.intensity} />
       </div>
       <div className="relative max-w-7xl mx-auto px-6 py-24">
         <div className="flex items-baseline justify-between flex-wrap gap-4 mb-10">
           <div>
-            <p className="text-xs font-display tracking-[0.35em] uppercase text-primary mb-2">Live Telemetry</p>
+            <p className="text-xs font-display tracking-[0.35em] uppercase text-primary mb-2">Live Telemetry · {industryName}</p>
             <h2 className="font-display text-3xl sm:text-4xl font-bold text-foreground">
               {industryName} performance, in real time
             </h2>
@@ -223,8 +253,8 @@ export default function IndustryInfographic({ industryName, industrySlug, metric
           </div>
         )}
 
-        {/* Live bar telemetry */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Universal live bar telemetry */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           {[
             { label: 'Attention rate', val: live.attention, suffix: '%', max: 100 },
             { label: 'Avg. dwell', val: live.dwell, suffix: 's', max: 45 },
@@ -234,7 +264,7 @@ export default function IndustryInfographic({ industryName, industrySlug, metric
               <div className="flex items-baseline justify-between mb-3">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">{m.label}</p>
                 <p className="font-display text-xl text-foreground tabular-nums">
-                  {m.val.toFixed(m.suffix === 's' ? 1 : 1)}{m.suffix}
+                  {m.val.toFixed(1)}{m.suffix}
                 </p>
               </div>
               <div className="h-1.5 w-full bg-primary/10 rounded-full overflow-hidden">
@@ -248,10 +278,68 @@ export default function IndustryInfographic({ industryName, industrySlug, metric
           ))}
         </div>
 
+        {/* Industry-tailored sparkline streams */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {streams.map((s) => {
+            const max = Math.max(s.max, ...s.history);
+            const min = Math.min(0, ...s.history);
+            const points = s.history
+              .map((v, i) => {
+                const x = (i / (s.history.length - 1)) * 100;
+                const y = 100 - ((v - min) / (max - min || 1)) * 100;
+                return `${x},${y}`;
+              })
+              .join(' ');
+            return (
+              <div key={s.label} className="glass-panel-elevated glow-edge p-5 rounded-md">
+                <div className="flex items-baseline justify-between mb-2">
+                  <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">{s.label}</p>
+                  <p className="font-display text-lg text-primary text-glow tabular-nums">
+                    {s.val < 10 ? s.val.toFixed(1) : Math.round(s.val)}{s.suffix}
+                  </p>
+                </div>
+                <svg viewBox="0 0 100 36" preserveAspectRatio="none" className="w-full h-12 overflow-visible">
+                  <defs>
+                    <linearGradient id={`g-${s.label}`} x1="0" x2="0" y1="0" y2="1">
+                      <stop offset="0%" stopColor={`hsl(${profile.hue} 100% 70%)`} stopOpacity="0.45" />
+                      <stop offset="100%" stopColor={`hsl(${profile.hue} 100% 70%)`} stopOpacity="0" />
+                    </linearGradient>
+                  </defs>
+                  <polygon
+                    points={`0,36 ${points
+                      .split(' ')
+                      .map((p) => {
+                        const [x, y] = p.split(',');
+                        return `${x},${(parseFloat(y) / 100) * 36}`;
+                      })
+                      .join(' ')} 100,36`}
+                    fill={`url(#g-${s.label})`}
+                  />
+                  <polyline
+                    points={points
+                      .split(' ')
+                      .map((p) => {
+                        const [x, y] = p.split(',');
+                        return `${x},${(parseFloat(y) / 100) * 36}`;
+                      })
+                      .join(' ')}
+                    fill="none"
+                    stroke={`hsl(${profile.hue} 100% 70%)`}
+                    strokeWidth="1.2"
+                    strokeLinejoin="round"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              </div>
+            );
+          })}
+        </div>
+
         <div className="mt-6 text-right text-xs text-muted-foreground tabular-nums">
-          {live.sessions.toLocaleString()} captured sessions today
+          {live.sessions.toLocaleString()} captured {industryName.toLowerCase()} sessions today
         </div>
       </div>
     </section>
   );
 }
+
