@@ -70,7 +70,7 @@ export default function IndustryPage() {
 
       {/* Live infographic — animated counters + holographic backdrop */}
       {industry.metrics && industry.metrics.length > 0 && (
-        <IndustryInfographic industryName={industry.name} metrics={industry.metrics} />
+        <IndustryInfographic industryName={industry.name} industrySlug={industry.slug} metrics={industry.metrics} />
       )}
 
       {scrollPanels.length > 0 && (
