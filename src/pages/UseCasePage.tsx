@@ -10,6 +10,7 @@ import Seo from '@/components/Seo';
 import ImmersiveHero from '@/components/ImmersiveHero';
 import StaggeredMediaGrid from '@/components/StaggeredMediaGrid';
 import StickyScrollytell, { ScrollPanel } from '@/components/StickyScrollytell';
+import QuoteForm from '@/components/QuoteForm';
 
 export default function UseCasePage() {
   const { slug } = useParams<{ slug: string }>();

@@ -12,6 +12,7 @@ import StaggeredMediaGrid from '@/components/StaggeredMediaGrid';
 import StickyScrollytell, { ScrollPanel } from '@/components/StickyScrollytell';
 import IndustryInfographic from '@/components/IndustryInfographic';
 import HolographicCanvas from '@/components/HolographicCanvas';
+import QuoteForm from '@/components/QuoteForm';
 
 export default function IndustryPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -178,34 +179,18 @@ export default function IndustryPage() {
             </div>
           )}
 
-          {/* Industry-tailored Contact CTA */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="glass-panel-elevated glow-edge p-8 sm:p-10 text-center"
-          >
-            <p className="text-sm font-display tracking-[0.3em] uppercase text-primary mb-3">Tailored for {industry.name}</p>
-            <h3 className="font-display text-2xl sm:text-3xl font-bold text-foreground mb-3">Scope your {industry.name.toLowerCase()} deployment</h3>
-            <p className="text-muted-foreground font-body mb-6 max-w-xl mx-auto">
-              Tell us about the venue, audience and outcomes you’re targeting. A specialist will reply within one business day.
-            </p>
-            <div className="flex flex-wrap items-center justify-center gap-3">
-              <Link
-                to={`/contact?industry=${industry.slug}`}
-                className="glass-panel-elevated glow-edge px-8 py-3 font-display text-sm font-medium tracking-wide text-primary hover:text-foreground transition-colors duration-300"
-              >
-                Start with {industry.name} brief
-              </Link>
-              <a
-                href={`mailto:holograms@lucene.co?subject=${encodeURIComponent(`${industry.name} — Lucen enquiry`)}`}
-                className="glass-panel px-6 py-3 rounded-md font-display text-sm tracking-wide text-foreground hover:text-primary transition-colors"
-              >
-                Email holograms@lucene.co
-              </a>
-            </div>
-          </motion.div>
+          {/* Industry-tailored quote form */}
+          <QuoteForm industry={industry} />
+
+          <p className="text-center text-muted-foreground text-xs mt-6">
+            Prefer email?{' '}
+            <a
+              href={`mailto:holograms@lucene.co?subject=${encodeURIComponent(`${industry.name} — Lucen enquiry`)}`}
+              className="text-primary hover:underline"
+            >
+              holograms@lucene.co
+            </a>
+          </p>
         </div>
       </div>
       <LucenFooter />
