@@ -10,6 +10,7 @@ import Seo from '@/components/Seo';
 import ImmersiveHero from '@/components/ImmersiveHero';
 import StaggeredMediaGrid from '@/components/StaggeredMediaGrid';
 import StickyScrollytell, { ScrollPanel } from '@/components/StickyScrollytell';
+import QuoteForm from '@/components/QuoteForm';
 
 export default function UseCasePage() {
   const { slug } = useParams<{ slug: string }>();
@@ -165,36 +166,22 @@ export default function UseCasePage() {
             </div>
           )}
 
-          {/* Tailored Contact CTA */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="glass-panel-elevated glow-edge p-8 sm:p-10 text-center"
-          >
-            <p className="text-sm font-display tracking-[0.3em] uppercase text-primary mb-3">Get a quote</p>
-            <h3 className="font-display text-2xl sm:text-3xl font-bold text-foreground mb-3">Scope your {useCase.title.toLowerCase()}</h3>
-            <p className="text-muted-foreground font-body mb-6 max-w-xl mx-auto">
-              We’ll tailor the brief to {industry ? industry.name.toLowerCase() : 'your sector'} and respond within one business day.
-            </p>
-            <div className="flex flex-wrap items-center justify-center gap-3">
-              <Link
-                to={`/contact?use_case=${useCase.slug}${industry ? `&industry=${industry.slug}` : ''}`}
-                className="glass-panel-elevated glow-edge px-8 py-3 font-display text-sm font-medium tracking-wide text-primary hover:text-foreground transition-colors duration-300"
-              >
-                Request tailored brief
-              </Link>
-              <a
-                href={`mailto:holograms@lucene.co?subject=${encodeURIComponent(`${useCase.title} — Lucen enquiry`)}`}
-                className="glass-panel px-6 py-3 rounded-md font-display text-sm tracking-wide text-foreground hover:text-primary transition-colors"
-              >
-                Email holograms@lucene.co
-              </a>
-            </div>
-          </motion.div>
+          {/* Use-case tailored quote form */}
+          <QuoteForm useCase={useCase} industry={industry} />
+
+          <p className="text-center text-muted-foreground text-xs mt-6">
+            Prefer email?{' '}
+            <a
+              href={`mailto:holograms@lucene.co?subject=${encodeURIComponent(`${useCase.title} — Lucen enquiry`)}`}
+              className="text-primary hover:underline"
+            >
+              holograms@lucene.co
+            </a>
+          </p>
         </div>
       </div>
+      <LucenFooter />
     </div>
   );
 }
+
