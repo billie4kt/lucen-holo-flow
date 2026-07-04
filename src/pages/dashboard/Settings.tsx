@@ -16,11 +16,13 @@ export default function ClientSettings() {
 
   useEffect(() => {
     if (!user) return;
-    supabase.from("profiles").select("full_name, org_id, organizations(name)").eq("id", user.id).maybeSingle()
-      .then(({ data }) => {
+    supabase.from("profiles").select("full_name, org_id").eq("id", user.id).maybeSingle()
+      .then(async ({ data }) => {
         setName(data?.full_name ?? "");
-        // @ts-expect-error joined
-        setOrg(data?.organizations?.name ?? null);
+        if (data?.org_id) {
+          const { data: o } = await supabase.from("organizations").select("name").eq("id", data.org_id).maybeSingle();
+          setOrg(o?.name ?? null);
+        }
       });
   }, [user]);
 
