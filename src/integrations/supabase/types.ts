@@ -53,9 +53,12 @@ export type Database = {
           message: string | null
           mode: string
           name: string
+          org_id: string | null
+          owner_id: string | null
           phone: string | null
           preferred_time: string | null
           status: string
+          tags: string[]
           timeline: string | null
           use_case: string | null
         }
@@ -70,9 +73,12 @@ export type Database = {
           message?: string | null
           mode?: string
           name: string
+          org_id?: string | null
+          owner_id?: string | null
           phone?: string | null
           preferred_time?: string | null
           status?: string
+          tags?: string[]
           timeline?: string | null
           use_case?: string | null
         }
@@ -87,13 +93,74 @@ export type Database = {
           message?: string | null
           mode?: string
           name?: string
+          org_id?: string | null
+          owner_id?: string | null
           phone?: string | null
           preferred_time?: string | null
           status?: string
+          tags?: string[]
           timeline?: string | null
           use_case?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "contact_submissions_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      engagements: {
+        Row: {
+          created_at: string
+          id: string
+          industry_slug: string | null
+          next_step: string | null
+          org_id: string
+          stage: string | null
+          starts_at: string | null
+          status: string
+          title: string
+          updated_at: string
+          use_case_slug: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          industry_slug?: string | null
+          next_step?: string | null
+          org_id: string
+          stage?: string | null
+          starts_at?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          use_case_slug?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          industry_slug?: string | null
+          next_step?: string | null
+          org_id?: string
+          stage?: string | null
+          starts_at?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          use_case_slug?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "engagements_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       engine_events: {
         Row: {
@@ -134,15 +201,136 @@ export type Database = {
         }
         Relationships: []
       }
+      organizations: {
+        Row: {
+          created_at: string
+          id: string
+          industry: string | null
+          name: string
+          slug: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          industry?: string | null
+          name: string
+          slug: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          industry?: string | null
+          name?: string
+          slug?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          full_name: string | null
+          id: string
+          org_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          id: string
+          org_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          org_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      submission_notes: {
+        Row: {
+          author_id: string | null
+          body: string
+          created_at: string
+          id: string
+          submission_id: string
+          visibility: string
+        }
+        Insert: {
+          author_id?: string | null
+          body: string
+          created_at?: string
+          id?: string
+          submission_id: string
+          visibility?: string
+        }
+        Update: {
+          author_id?: string | null
+          body?: string
+          created_at?: string
+          id?: string
+          submission_id?: string
+          visibility?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "submission_notes_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "contact_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "client"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -269,6 +457,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "client"],
+    },
   },
 } as const
