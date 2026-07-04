@@ -118,7 +118,7 @@ export default function AdminContent() {
             {industries.map((i) => (
               <Card key={i.slug} className="p-3">
                 <p className="font-medium">{i.name}</p>
-                <p className="text-xs text-muted-foreground truncate">{i.tagline}</p>
+                <p className="text-xs text-muted-foreground truncate">{i.value}</p>
                 <p className="text-[10px] font-mono text-muted-foreground mt-1">/industries/{i.slug}</p>
               </Card>
             ))}
@@ -131,7 +131,7 @@ export default function AdminContent() {
           {useCases.map((u) => (
             <Card key={u.slug} className="p-3">
               <p className="font-medium">{u.title}</p>
-              <p className="text-xs text-muted-foreground truncate">{u.tagline}</p>
+              <p className="text-xs text-muted-foreground truncate">{u.description}</p>
               <p className="text-[10px] font-mono text-muted-foreground mt-1">/use-cases/{u.slug}</p>
             </Card>
           ))}
