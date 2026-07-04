@@ -70,7 +70,7 @@ export default function Auth() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Seo title="Sign in · Lucen" description="Sign in to your Lucen workspace." />
+      <Seo title="Sign in · Lucen" description="Sign in to your Lucen workspace." path="/auth" />
       <Card className="w-full max-w-sm p-6 space-y-5">
         <div>
           <Link to="/" className="text-xs uppercase tracking-[0.3em] text-primary">Lucen</Link>
