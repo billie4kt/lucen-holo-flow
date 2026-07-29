@@ -66,6 +66,16 @@ export default function Admin() {
     setLogsTotal(data.total || 0);
   }, []);
 
+  const fetchAnalytics = useCallback(
+    async (days: number) => {
+      const data = await call({ password, action: "analytics", days });
+      return { events: data.events || [], submissions: data.submissions || [] };
+    },
+    [password],
+  );
+
+
+
   const initialLoad = async (pw = password, silent = false) => {
     setLoading(true);
     try {
