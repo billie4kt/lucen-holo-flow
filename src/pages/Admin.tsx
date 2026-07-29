@@ -65,15 +65,18 @@ export default function Admin() {
     setLogsTotal(data.total || 0);
   }, []);
 
-  const initialLoad = async (pw = password) => {
+  const initialLoad = async (pw = password, silent = false) => {
     setLoading(true);
     try {
       await loadPage(pw, 0, true);
       setAuthed(true);
       sessionStorage.setItem("admin_pw", pw);
     } catch (e) {
-      toast({ title: "Login failed", description: (e as Error).message, variant: "destructive" });
+      if (!silent) {
+        toast({ title: "Login failed", description: (e as Error).message, variant: "destructive" });
+      }
       setAuthed(false);
+      setPassword("");
       sessionStorage.removeItem("admin_pw");
     } finally {
       setLoading(false);
@@ -81,7 +84,8 @@ export default function Admin() {
   };
 
   useEffect(() => {
-    if (password) initialLoad(password);
+    const stored = sessionStorage.getItem("admin_pw");
+    if (stored) initialLoad(stored, true);
     document.title = "Admin · Contact Submissions";
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
