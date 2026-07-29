@@ -230,7 +230,7 @@ export default function Admin() {
         </header>
 
         <div className="flex gap-2 border-b overflow-x-auto">
-          {(["telemetry", "submissions", "audit"] as const).map((t) => (
+          {(["telemetry", "analytics", "submissions", "audit"] as const).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
@@ -238,12 +238,20 @@ export default function Admin() {
                 tab === t ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"
               }`}
             >
-              {t === "telemetry" ? "Site Telemetry" : t === "submissions" ? "Submissions" : "Audit Log"}
+              {t === "telemetry"
+                ? "Site Telemetry"
+                : t === "analytics"
+                  ? "Analytics"
+                  : t === "submissions"
+                    ? "Submissions"
+                    : "Audit Log"}
             </button>
           ))}
         </div>
 
         {tab === "telemetry" && <TelemetryPanel />}
+        {tab === "analytics" && <AnalyticsDashboard fetchAnalytics={fetchAnalytics} />}
+
 
 
         {tab === "submissions" && (
