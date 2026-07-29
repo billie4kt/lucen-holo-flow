@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
 import { Trash2, RefreshCw, LogOut } from "lucide-react";
 import TelemetryPanel from "@/components/TelemetryPanel";
+import AnalyticsDashboard from "@/components/AnalyticsDashboard";
 
 interface Submission {
   id: string;
@@ -38,7 +39,7 @@ export default function Admin() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [total, setTotal] = useState(0);
-  const [tab, setTab] = useState<"telemetry" | "submissions" | "audit">("telemetry");
+  const [tab, setTab] = useState<"telemetry" | "analytics" | "submissions" | "audit">("telemetry");
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [logsTotal, setLogsTotal] = useState(0);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
@@ -64,6 +65,16 @@ export default function Admin() {
     setLogs(data.logs || []);
     setLogsTotal(data.total || 0);
   }, []);
+
+  const fetchAnalytics = useCallback(
+    async (days: number) => {
+      const data = await call({ password, action: "analytics", days });
+      return { events: data.events || [], submissions: data.submissions || [] };
+    },
+    [password],
+  );
+
+
 
   const initialLoad = async (pw = password, silent = false) => {
     setLoading(true);
@@ -219,7 +230,7 @@ export default function Admin() {
         </header>
 
         <div className="flex gap-2 border-b overflow-x-auto">
-          {(["telemetry", "submissions", "audit"] as const).map((t) => (
+          {(["telemetry", "analytics", "submissions", "audit"] as const).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
@@ -227,12 +238,20 @@ export default function Admin() {
                 tab === t ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"
               }`}
             >
-              {t === "telemetry" ? "Site Telemetry" : t === "submissions" ? "Submissions" : "Audit Log"}
+              {t === "telemetry"
+                ? "Site Telemetry"
+                : t === "analytics"
+                  ? "Analytics"
+                  : t === "submissions"
+                    ? "Submissions"
+                    : "Audit Log"}
             </button>
           ))}
         </div>
 
         {tab === "telemetry" && <TelemetryPanel />}
+        {tab === "analytics" && <AnalyticsDashboard fetchAnalytics={fetchAnalytics} />}
+
 
 
         {tab === "submissions" && (
