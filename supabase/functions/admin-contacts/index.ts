@@ -16,7 +16,7 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { password, action, id, status, limit, offset } = await req.json();
+    const { password, action, id, status, limit, offset, days } = await req.json();
     const expected = Deno.env.get("ADMIN_PASSWORD");
     if (!expected || password !== expected) {
       return json({ error: "Invalid password" }, 401);
