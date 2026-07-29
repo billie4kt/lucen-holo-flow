@@ -85,6 +85,31 @@ Deno.serve(async (req) => {
       return json({ logs: data, total: count ?? 0 });
     }
 
+    if (action === "analytics") {
+      const d = Math.min(Math.max(Number(days) || 1, 1), 400);
+      const since = new Date(Date.now() - d * 24 * 3600 * 1000).toISOString();
+
+      const [evts, subs] = await Promise.all([
+        supabase
+          .from("engine_events")
+          .select("event_type, path, session_id, referrer, integration_slug, metadata, created_at")
+          .gte("created_at", since)
+          .order("created_at", { ascending: false })
+          .limit(20000),
+        supabase
+          .from("contact_submissions")
+          .select("id, name, mode, status, country, industry, use_case, created_at")
+          .gte("created_at", since)
+          .order("created_at", { ascending: false })
+          .limit(5000),
+      ]);
+
+      if (evts.error) return json({ error: evts.error.message }, 500);
+      if (subs.error) return json({ error: subs.error.message }, 500);
+
+      return json({ events: evts.data ?? [], submissions: subs.data ?? [], since, days: d });
+    }
+
     return json({ error: "Unknown action" }, 400);
   } catch (e) {
     return json({ error: (e as Error).message }, 500);
