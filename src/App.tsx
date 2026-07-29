@@ -14,6 +14,7 @@ import About from "./pages/About.tsx";
 import GetStarted from "./pages/GetStarted.tsx";
 import Admin from "./pages/Admin.tsx";
 import IntegrationPage from "./pages/IntegrationPage.tsx";
+import RouteAnalytics from "./components/RouteAnalytics.tsx";
 
 const queryClient = new QueryClient();
 
