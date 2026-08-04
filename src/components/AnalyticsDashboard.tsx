@@ -114,6 +114,8 @@ export default function AnalyticsDashboard({
     const os = new Map<string, number>();
     const browsers = new Map<string, number>();
     const countries = new Map<string, number>();
+    const platforms = new Map<string, number>();
+    const hosts = new Map<string, number>();
     const referrers = new Map<string, number>();
     const pages = new Map<string, { views: number; dwellTotal: number; dwellCount: number }>();
     const sessions = new Set<string>();
@@ -145,6 +147,8 @@ export default function AnalyticsDashboard({
         os.set(meta(e, 'os'), (os.get(meta(e, 'os')) ?? 0) + 1);
         browsers.set(meta(e, 'browser'), (browsers.get(meta(e, 'browser')) ?? 0) + 1);
         countries.set(meta(e, 'country'), (countries.get(meta(e, 'country')) ?? 0) + 1);
+        platforms.set(meta(e, 'platform'), (platforms.get(meta(e, 'platform')) ?? 0) + 1);
+        hosts.set(meta(e, 'host'), (hosts.get(meta(e, 'host')) ?? 0) + 1);
         let ref = 'Direct';
         try {
           if (e.referrer) ref = new URL(e.referrer).hostname;
@@ -191,6 +195,8 @@ export default function AnalyticsDashboard({
       os: topN(os, 6),
       browsers: topN(browsers, 6),
       countries: topN(countries, 8),
+      platforms: topN(platforms, 8),
+      hosts: topN(hosts, 8),
       referrers: topN(referrers, 6),
       topPages,
     };
@@ -348,6 +354,42 @@ export default function AnalyticsDashboard({
           </div>
         </Card>
       </div>
+
+      {/* Deployment environments */}
+      <div className="grid lg:grid-cols-2 gap-4">
+        <Card className="p-4">
+          <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-3">Traffic by deployment platform</p>
+          <div className="space-y-2">
+            {agg.platforms.map((p) => {
+              const max = agg.platforms[0]?.value || 1;
+              return (
+                <div key={p.name} className="flex items-center gap-3 text-sm">
+                  <span className="w-32 truncate text-xs text-muted-foreground">{p.name}</span>
+                  <div className="flex-1 h-1.5 bg-muted rounded overflow-hidden">
+                    <div className="h-full bg-primary" style={{ width: `${(p.value / max) * 100}%` }} />
+                  </div>
+                  <span className="w-10 text-right tabular-nums text-xs">{p.value}</span>
+                </div>
+              );
+            })}
+            {agg.platforms.length === 0 && <p className="text-sm text-muted-foreground">No data yet.</p>}
+          </div>
+        </Card>
+        <Card className="p-4">
+          <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-3">Origins / hostnames</p>
+          <div className="space-y-1 text-xs">
+            {agg.hosts.map((h) => (
+              <div key={h.name} className="flex items-center justify-between text-muted-foreground">
+                <span className="truncate font-mono">{h.name}</span>
+                <span className="tabular-nums">{h.value}</span>
+              </div>
+            ))}
+            {agg.hosts.length === 0 && <p className="text-sm text-muted-foreground">No data yet.</p>}
+          </div>
+        </Card>
+      </div>
+
+
 
       {/* Pages */}
       <Card className="p-4 overflow-x-auto">

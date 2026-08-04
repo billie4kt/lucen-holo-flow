@@ -27,7 +27,29 @@ export type ClientEnv = {
   language: string;
   screen: string;
   viewport: string;
+  platform: string;
+  host: string;
+  origin: string;
 };
+
+/** Detects which hosting platform is serving the current page. */
+export function detectPlatform(host: string): string {
+  const h = host.toLowerCase();
+  if (/localhost|127\.0\.0\.1|\.local$/.test(h)) return 'Local';
+  if (/(^|\.)vercel\.app$/.test(h)) return 'Vercel';
+  if (/(^|\.)onrender\.com$/.test(h)) return 'Render';
+  if (/(^|\.)up\.railway\.app$|(^|\.)railway\.app$/.test(h)) return 'Railway';
+  if (/(^|\.)lovable\.app$|(^|\.)lovableproject\.com$/.test(h)) return 'Lovable';
+  if (/(^|\.)netlify\.app$/.test(h)) return 'Netlify';
+  if (/(^|\.)pages\.dev$/.test(h)) return 'Cloudflare';
+  if (/(^|\.)fly\.dev$/.test(h)) return 'Fly.io';
+  if (/(^|\.)github\.io$/.test(h)) return 'GitHub Pages';
+  if (/(^|\.)web\.app$|(^|\.)firebaseapp\.com$/.test(h)) return 'Firebase';
+  if (/(^|\.)amplifyapp\.com$/.test(h)) return 'AWS Amplify';
+  if (/(^|\.)azurestaticapps\.net$/.test(h)) return 'Azure';
+  return 'Custom domain';
+}
+
 
 function detectOS(ua: string): string {
   if (/windows nt/i.test(ua)) return 'Windows';
@@ -69,11 +91,12 @@ function detectCountry(timezone: string): string {
 
 export function getClientEnv(): ClientEnv {
   if (typeof window === 'undefined') {
-    return { device: 'desktop', os: 'Other', browser: 'Other', country: 'Unknown', timezone: 'UTC', language: 'en', screen: '', viewport: '' };
+    return { device: 'desktop', os: 'Other', browser: 'Other', country: 'Unknown', timezone: 'UTC', language: 'en', screen: '', viewport: '', platform: 'Unknown', host: '', origin: '' };
   }
   const ua = navigator.userAgent;
   let timezone = 'UTC';
   try { timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'; } catch { /* noop */ }
+  const host = window.location.hostname;
   return {
     device: detectDevice(ua, window.innerWidth),
     os: detectOS(ua),
@@ -83,6 +106,9 @@ export function getClientEnv(): ClientEnv {
     language: navigator.language || 'en',
     screen: `${window.screen?.width ?? 0}x${window.screen?.height ?? 0}`,
     viewport: `${window.innerWidth}x${window.innerHeight}`,
+    platform: detectPlatform(host),
+    host,
+    origin: window.location.origin,
   };
 }
 
