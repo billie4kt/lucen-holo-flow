@@ -91,11 +91,12 @@ function detectCountry(timezone: string): string {
 
 export function getClientEnv(): ClientEnv {
   if (typeof window === 'undefined') {
-    return { device: 'desktop', os: 'Other', browser: 'Other', country: 'Unknown', timezone: 'UTC', language: 'en', screen: '', viewport: '' };
+    return { device: 'desktop', os: 'Other', browser: 'Other', country: 'Unknown', timezone: 'UTC', language: 'en', screen: '', viewport: '', platform: 'Unknown', host: '', origin: '' };
   }
   const ua = navigator.userAgent;
   let timezone = 'UTC';
   try { timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'; } catch { /* noop */ }
+  const host = window.location.hostname;
   return {
     device: detectDevice(ua, window.innerWidth),
     os: detectOS(ua),
@@ -105,6 +106,9 @@ export function getClientEnv(): ClientEnv {
     language: navigator.language || 'en',
     screen: `${window.screen?.width ?? 0}x${window.screen?.height ?? 0}`,
     viewport: `${window.innerWidth}x${window.innerHeight}`,
+    platform: detectPlatform(host),
+    host,
+    origin: window.location.origin,
   };
 }
 
