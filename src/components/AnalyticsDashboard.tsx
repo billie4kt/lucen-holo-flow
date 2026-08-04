@@ -114,6 +114,8 @@ export default function AnalyticsDashboard({
     const os = new Map<string, number>();
     const browsers = new Map<string, number>();
     const countries = new Map<string, number>();
+    const platforms = new Map<string, number>();
+    const hosts = new Map<string, number>();
     const referrers = new Map<string, number>();
     const pages = new Map<string, { views: number; dwellTotal: number; dwellCount: number }>();
     const sessions = new Set<string>();
