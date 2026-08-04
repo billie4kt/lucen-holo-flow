@@ -147,6 +147,8 @@ export default function AnalyticsDashboard({
         os.set(meta(e, 'os'), (os.get(meta(e, 'os')) ?? 0) + 1);
         browsers.set(meta(e, 'browser'), (browsers.get(meta(e, 'browser')) ?? 0) + 1);
         countries.set(meta(e, 'country'), (countries.get(meta(e, 'country')) ?? 0) + 1);
+        platforms.set(meta(e, 'platform'), (platforms.get(meta(e, 'platform')) ?? 0) + 1);
+        hosts.set(meta(e, 'host'), (hosts.get(meta(e, 'host')) ?? 0) + 1);
         let ref = 'Direct';
         try {
           if (e.referrer) ref = new URL(e.referrer).hostname;
@@ -193,6 +195,8 @@ export default function AnalyticsDashboard({
       os: topN(os, 6),
       browsers: topN(browsers, 6),
       countries: topN(countries, 8),
+      platforms: topN(platforms, 8),
+      hosts: topN(hosts, 8),
       referrers: topN(referrers, 6),
       topPages,
     };
