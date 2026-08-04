@@ -27,7 +27,29 @@ export type ClientEnv = {
   language: string;
   screen: string;
   viewport: string;
+  platform: string;
+  host: string;
+  origin: string;
 };
+
+/** Detects which hosting platform is serving the current page. */
+export function detectPlatform(host: string): string {
+  const h = host.toLowerCase();
+  if (/localhost|127\.0\.0\.1|\.local$/.test(h)) return 'Local';
+  if (/(^|\.)vercel\.app$/.test(h)) return 'Vercel';
+  if (/(^|\.)onrender\.com$/.test(h)) return 'Render';
+  if (/(^|\.)up\.railway\.app$|(^|\.)railway\.app$/.test(h)) return 'Railway';
+  if (/(^|\.)lovable\.app$|(^|\.)lovableproject\.com$/.test(h)) return 'Lovable';
+  if (/(^|\.)netlify\.app$/.test(h)) return 'Netlify';
+  if (/(^|\.)pages\.dev$/.test(h)) return 'Cloudflare';
+  if (/(^|\.)fly\.dev$/.test(h)) return 'Fly.io';
+  if (/(^|\.)github\.io$/.test(h)) return 'GitHub Pages';
+  if (/(^|\.)web\.app$|(^|\.)firebaseapp\.com$/.test(h)) return 'Firebase';
+  if (/(^|\.)amplifyapp\.com$/.test(h)) return 'AWS Amplify';
+  if (/(^|\.)azurestaticapps\.net$/.test(h)) return 'Azure';
+  return 'Custom domain';
+}
+
 
 function detectOS(ua: string): string {
   if (/windows nt/i.test(ua)) return 'Windows';
